@@ -1,4 +1,4 @@
-const BASE_URL = "https://fluxxo-production-d9d7.up.railway.app/api/v1";
+const BASE_URL = import.meta.env.VITE_API_URL || "https://fluxxo-production-d9d7.up.railway.app/api/v1";
 
 export interface GastoAPI {
   id?: string | number;
