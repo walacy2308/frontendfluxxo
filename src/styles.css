@@ -1,0 +1,237 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-income: var(--income);
+  --color-expense: var(--expense);
+  --color-income-muted: var(--income-muted);
+  --color-expense-muted: var(--expense-muted);
+  --color-success: var(--success);
+  --color-success-muted: var(--success-muted);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --font-display: "DM Sans", system-ui, sans-serif;
+  --font-body: "DM Sans", system-ui, sans-serif;
+}
+
+/* ── Wealth Premium Theme ── */
+:root {
+  --radius: 1rem;
+  --background: #000000; /* Preto puro */
+  --foreground: #F8FAFC;
+  --card: rgba(255, 255, 255, 0.02); /* Light glass */
+  --card-foreground: #F8FAFC;
+  --popover: #000000;
+  --popover-foreground: #F8FAFC;
+  --primary: #22C55E; /* Verde vibrante */
+  --primary-foreground: #000000;
+  --secondary: rgba(255, 255, 255, 0.05);
+  --secondary-foreground: #F8FAFC;
+  --muted: rgba(255, 255, 255, 0.05);
+  --muted-foreground: #94A3B8;
+  --accent: rgba(34, 197, 94, 0.1);
+  --accent-foreground: #22C55E;
+  --destructive: #EF4444; /* Vermelho para gastos */
+  --destructive-foreground: #F8FAFC;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.05);
+  --ring: #22C55E;
+  --income: #22C55E; /* Verde para ganhos */
+  --income-muted: rgba(34, 197, 94, 0.15);
+  --expense: #EF4444;
+  --expense-muted: rgba(239, 68, 68, 0.15);
+  --success: #22C55E;
+  --success-muted: rgba(34, 197, 94, 0.15);
+  --chart-1: #22C55E; /* Verde */
+  --chart-2: #10B981; /* Esmeralda */
+  --chart-3: #EF4444; /* Vermelho */
+  --chart-4: #3B82F6;
+  --chart-5: #8B5CF6;
+  --sidebar: #050505;
+  --sidebar-foreground: #F8FAFC;
+  --sidebar-primary: #22C55E;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: rgba(34, 197, 94, 0.1);
+  --sidebar-accent-foreground: #22C55E;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: #22C55E;
+}
+
+.dark {
+  /* Same as root — Fluxxo is dark-first */
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-body);
+  }
+}
+
+/* ── Animations ── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-fade-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.15); }
+  50% { box-shadow: 0 0 35px rgba(34, 197, 94, 0.4); }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fade-up-1 { animation-delay: 0ms; }
+.animate-fade-up-2 { animation-delay: 100ms; }
+.animate-fade-up-3 { animation-delay: 200ms; }
+.animate-fade-up-4 { animation-delay: 300ms; }
+.animate-fade-up-5 { animation-delay: 400ms; }
+
+.animate-scale-fade {
+  animation: scale-fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-count-up {
+  animation: count-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Premium card */
+.card-premium {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.card-premium:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 48px -12px rgba(34, 197, 94, 0.2);
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+/* Glow card for balance */
+.card-glow {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+/* Transaction row */
+.transaction-row {
+  transition: background-color 0.2s ease,
+              transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.transaction-row:hover {
+  transform: translateX(4px);
+  border-color: rgba(34, 197, 94, 0.3);
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* Glass header */
+.glass-header {
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  background: rgba(0, 0, 0, 0.85); /* Black background with opacity */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Gradient button (Green to Gold hover) */
+.btn-gradient {
+  background: #16A34A;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  color: white;
+}
+
+.btn-gradient::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #16A34A, #10B981);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.btn-gradient > * {
+  position: relative;
+  z-index: 1;
+}
+
+.btn-gradient:hover::after {
+  opacity: 1;
+}
+
+.btn-gradient:hover {
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.35);
+}
+
+/* Gradient text */
+.text-gradient {
+  background: linear-gradient(135deg, #22C55E, #10B981);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

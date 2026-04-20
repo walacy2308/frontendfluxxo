@@ -1,0 +1,27 @@
+{
+  "name": "Fluxxo — Seu Fluxo Financeiro Inteligente",
+  "short_name": "Fluxxo",
+  "description": "Gerencie suas finanças com um dashboard moderno e intuitivo.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#22C55E",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
