@@ -20,6 +20,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isReady, setIsReady] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const ensureUserRecord = useCallback(async (u: User) => {
+    try {
+      // Check if user already exists in public.users
+      const { data, error } = await supabase
+        .from("users")
+        .select("id")
+        .eq("id", u.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error("AuthProvider: Error checking public.users:", error);
+        return;
+      }
+
+      // If not, create the record
+      if (!data) {
+        console.log("AuthProvider: Creating public.users record for:", u.id);
+        const { error: insertError } = await supabase
+          .from("users")
+          .insert({ 
+            id: u.id, 
+            email: u.email,
+            telegram_code: null,
+            telegram_chat_id: null
+          });
+        
+        if (insertError) {
+          console.error("AuthProvider: Error creating public.users record:", insertError);
+        }
+      }
+    } catch (e) {
+      console.error("AuthProvider: Exception in ensureUserRecord:", e);
+    }
+  }, []);
+
   useEffect(() => {
     const initAuth = async () => {
       console.log("Initializing Auth...");
@@ -34,9 +69,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { data: { session: s } } = await supabase.auth.getSession();
         setSession(s);
         
-        if (s) {
-          const { data: { user: u } } = await supabase.auth.getUser();
-          setUser(u);
+        if (s?.user) {
+          setUser(s.user);
+          // Gently ensure the public record exists
+          ensureUserRecord(s.user);
         }
         console.log("Auth initialized. User:", s?.user?.id);
       } catch (e) {
@@ -53,10 +89,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log("Auth State Change:", event, s?.user?.id);
       setSession(s);
       setUser(s?.user ?? null);
+      if (s?.user) {
+        ensureUserRecord(s.user);
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [ensureUserRecord]);
 
   const signIn = useCallback(async (email: string, password: string) => {
     setLoading(true);
@@ -74,17 +113,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { error, data } = response;
       
       clearTimeout(authTimeout);
-      setLoading(false);
       
       if (error) {
         console.error("AuthProvider: Sign in error details:", error);
+        setLoading(false);
         const msg = error.message === "Invalid login credentials"
           ? "E-mail ou senha incorretos."
           : error.message;
         return { error: msg };
       }
+
+      if (data.user) {
+        console.log("AuthProvider: Sign in success! Setting local state for:", data.user.id);
+        setSession(data.session);
+        setUser(data.user);
+        await ensureUserRecord(data.user);
+      }
       
-      console.log("AuthProvider: Sign in success! User ID:", data.user?.id);
+      setLoading(false);
       return { error: null };
     } catch (e: any) {
       clearTimeout(authTimeout);
@@ -92,7 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       return { error: e.message || "Erro inesperado ao entrar." };
     }
-  }, []);
+  }, [ensureUserRecord]);
 
   const signUp = useCallback(async (email: string, password: string, name?: string) => {
     setLoading(true);

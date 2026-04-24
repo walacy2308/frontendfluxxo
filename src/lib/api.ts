@@ -118,8 +118,22 @@ export async function criarGasto(data: CriarGastoData, userId?: string): Promise
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error(`Erro ao criar gasto: ${res.status}`);
-  const gasto: GastoAPI = await res.json();
-  return mapGastoToTransaction(gasto, 0);
+  const responseData = await res.json();
+  
+  // If the backend returns a success message instead of the object
+  if (responseData.sucesso) {
+    return {
+      id: "temp-" + Date.now(),
+      description: data.descricao,
+      amount: data.valor,
+      type: "expense",
+      category: data.categoria,
+      date: new Date().toISOString(),
+      label: data.descricao
+    } as Transaction;
+  }
+
+  return mapGastoToTransaction(responseData as GastoAPI, 0);
 }
 
 export async function deletarGasto(id: string, userId: string, parcelId?: string): Promise<void> {

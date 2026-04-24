@@ -125,11 +125,22 @@ function Dashboard() {
   };
 
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
+    const poll = async () => {
+      if (user?.id) {
+        await getGastos();
+      }
+      timeoutId = setTimeout(poll, 10000); // Polling every 10s is safer than 5s
+    };
+
     if (user?.id) {
-      getGastos();
+      poll();
     }
-    const interval = setInterval(getGastos, 5000);
-    return () => clearInterval(interval);
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [getGastos, user?.id]);
 
   const handleDelete = useCallback(async (id: string, parcelId?: string) => {
