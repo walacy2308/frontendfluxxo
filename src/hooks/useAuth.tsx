@@ -123,7 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error: msg };
       }
 
-      if (data.user) {
+      if (data && data.user) {
         console.log("AuthProvider: Sign in success! Setting local state for:", data.user.id);
         setSession(data.session);
         setUser(data.user);
