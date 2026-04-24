@@ -72,19 +72,32 @@ export async function getGastos(userId?: string): Promise<Transaction[]> {
     return [];
   }
 
-  const res = await fetch(`${BASE_URL}/gastos`, {
-    headers: getHeaders(userId),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    console.error(`Erro ao buscar gastos (${res.status}):`, errorText);
-    throw new Error(`Erro ao buscar gastos: ${res.status}`);
+  try {
+    const res = await fetch(`${BASE_URL}/gastos`, {
+      headers: getHeaders(userId),
+      signal: controller.signal,
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error(`Erro ao buscar gastos (${res.status}):`, errorText);
+      throw new Error(`Erro ao buscar gastos: ${res.status}`);
+    }
+
+    const data: GastoAPI[] = await res.json();
+    console.log("Gastos recebidos:", data);
+    return data.map(mapGastoToTransaction);
+  } catch (error: any) {
+    if (error.name === "AbortError") {
+      throw new Error("Tempo limite de conexão excedido");
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  const data: GastoAPI[] = await res.json();
-  console.log("Gastos recebidos:", data);
-  return data.map(mapGastoToTransaction);
 }
 
 export interface CriarGastoData {

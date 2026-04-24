@@ -22,18 +22,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const initAuth = async () => {
-      const { data: { session: s } } = await supabase.auth.getSession();
-      setSession(s);
-      
-      const { data: { user: u } } = await supabase.auth.getUser();
-      setUser(u);
-      
-      setIsReady(true);
+      console.log("Initializing Auth...");
+      const timeout = setTimeout(() => {
+        if (!isReady) {
+          console.warn("Auth initialization timed out.");
+          setIsReady(true);
+        }
+      }, 5000);
+
+      try {
+        const { data: { session: s } } = await supabase.auth.getSession();
+        setSession(s);
+        
+        if (s) {
+          const { data: { user: u } } = await supabase.auth.getUser();
+          setUser(u);
+        }
+        console.log("Auth initialized. User:", s?.user?.id);
+      } catch (e) {
+        console.error("Error during auth init:", e);
+      } finally {
+        clearTimeout(timeout);
+        setIsReady(true);
+      }
     };
 
     initAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
+      console.log("Auth State Change:", event, s?.user?.id);
       setSession(s);
       setUser(s?.user ?? null);
     });
@@ -43,37 +60,69 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = useCallback(async (email: string, password: string) => {
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) {
-      const msg = error.message === "Invalid login credentials"
-        ? "E-mail ou senha incorretos."
-        : error.message;
-      return { error: msg };
+    console.log("AuthProvider: Starting signIn for:", email);
+    
+    // Safety timeout to prevent infinite loading state
+    const authTimeout = setTimeout(() => {
+      console.warn("AuthProvider: signIn operation is taking too long...");
+    }, 10000);
+
+    try {
+      console.log("AuthProvider: Calling supabase.auth.signInWithPassword...");
+      const response = await supabase.auth.signInWithPassword({ email, password });
+      console.log("LOGIN RESPONSE:", response);
+      const { error, data } = response;
+      
+      clearTimeout(authTimeout);
+      setLoading(false);
+      
+      if (error) {
+        console.error("AuthProvider: Sign in error details:", error);
+        const msg = error.message === "Invalid login credentials"
+          ? "E-mail ou senha incorretos."
+          : error.message;
+        return { error: msg };
+      }
+      
+      console.log("AuthProvider: Sign in success! User ID:", data.user?.id);
+      return { error: null };
+    } catch (e: any) {
+      clearTimeout(authTimeout);
+      console.error("AuthProvider: Unexpected sign in exception:", e);
+      setLoading(false);
+      return { error: e.message || "Erro inesperado ao entrar." };
     }
-    return { error: null };
   }, []);
 
   const signUp = useCallback(async (email: string, password: string, name?: string) => {
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { 
-        emailRedirectTo: window.location.origin,
-        data: {
-          first_name: name,
-        }
-      },
-    });
-    setLoading(false);
-    if (error) {
-      const msg = error.message.includes("already registered")
-        ? "Este e-mail já está cadastrado."
-        : error.message;
-      return { error: msg };
+    console.log("Signing up with:", email);
+    try {
+      const { error, data } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { 
+          emailRedirectTo: window.location.origin,
+          data: {
+            first_name: name,
+          }
+        },
+      });
+      setLoading(false);
+      if (error) {
+        console.error("Sign up error:", error);
+        const msg = error.message.includes("already registered")
+          ? "Este e-mail já está cadastrado."
+          : error.message;
+        return { error: msg };
+      }
+      console.log("Sign up success:", data.user?.id);
+      return { error: null };
+    } catch (e: any) {
+      console.error("Unexpected sign up error:", e);
+      setLoading(false);
+      return { error: e.message || "Erro inesperado ao cadastrar." };
     }
-    return { error: null };
   }, []);
 
   const signOut = useCallback(async () => {

@@ -66,20 +66,28 @@ function Dashboard() {
 
   // Redirect to login if not authenticated
   useEffect(() => {
+    console.log("Dashboard: isReady:", isReady, "user:", user?.id);
     if (isReady && !user) {
+      console.log("Dashboard: No user found, redirecting to /login");
       navigate({ to: "/login" });
     }
   }, [isReady, user, navigate]);
 
   const getGastos = useCallback(async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      console.warn("Dashboard: getGastos called without user.id");
+      return;
+    }
+    console.log("Dashboard: Fetching gastos for user:", user.id);
     try {
       const data = await fetchGastosAPI(user.id);
+      console.log("Dashboard: Fetched", data.length, "gastos");
       setTransactions((prev) => {
         const completedMap = new Map(prev.filter((p) => p.completed).map((p) => [p.id, true]));
         return data.map((t) => ({ ...t, completed: t.completed !== undefined ? t.completed : (completedMap.get(t.id) || false) }));
       });
     } catch (err) {
+      console.error("Dashboard: Error fetching gastos:", err);
       setError(err instanceof Error ? err.message : "Erro de rede");
     } finally {
       setLoading(false);

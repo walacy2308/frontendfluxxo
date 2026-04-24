@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { Eye, EyeOff, Mail, Lock, Loader2, User as UserIcon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import fluxxoIconGlow from "@/assets/fluxxo-icon-glow.png";
@@ -15,7 +15,7 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
-  const { signIn, signUp, loading, user } = useAuth();
+  const { signIn, signUp, loading, user, isReady } = useAuth();
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -25,14 +25,9 @@ function LoginPage() {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Redirect if already logged in
-  if (user) {
-    navigate({ to: "/" });
-    return null;
-  }
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    console.log("Submit clicked, mode:", mode);
     setError(null);
     setSuccess(null);
 
@@ -52,10 +47,13 @@ function LoginPage() {
     }
 
     if (mode === "login") {
-      const { error: err } = await signIn(email, password);
+      const response = await signIn(email, password);
+      console.log("LOGIN RESPONSE:", response);
+      const { error: err } = response;
       if (err) {
         setError(err);
       } else {
+        console.log("Login successful, navigating to /");
         navigate({ to: "/" });
       }
     } else {
@@ -68,10 +66,18 @@ function LoginPage() {
     }
   };
 
+  // Redirect if already logged in - moved to useEffect for robustness
+  useEffect(() => {
+    if (isReady && user) {
+      console.log("User detected in LoginPage, redirecting to /...");
+      navigate({ to: "/" });
+    }
+  }, [isReady, user, navigate]);
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div
-        className="pointer-events-none fixed left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2"
+        className="pointer-events-none fixed left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 z-0"
         style={{
           width: 480,
           height: 480,
@@ -81,7 +87,7 @@ function LoginPage() {
         }}
       />
 
-      <div className="animate-fade-up relative w-full max-w-sm">
+      <div className="animate-fade-up relative z-10 w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center gap-4">
           <img src={fluxxoIconGlow} alt="Fluxxo" className="h-12 w-auto" />
           <div className="text-center">
