@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useMemo, type ReactNode } from "react";
 import { supabase } from "@/lib/supabase";
 import type { User, Session } from "@supabase/supabase-js";
 
@@ -66,7 +66,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }, 5000);
 
       try {
+        console.log("AuthProvider: Calling getSession()...");
         const { data: { session: s } } = await supabase.auth.getSession();
+        console.log("AuthProvider: getSession() completed. Session found:", !!s);
         setSession(s);
         
         if (s?.user) {
@@ -78,6 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (e) {
         console.error("Error during auth init:", e);
       } finally {
+        console.log("AuthProvider: initAuth finally block");
         clearTimeout(timeout);
         setIsReady(true);
       }
@@ -175,8 +178,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   }, []);
 
+  const value = useMemo(() => ({
+    user,
+    session,
+    isReady,
+    loading,
+    signIn,
+    signUp,
+    signOut
+  }), [user, session, isReady, loading, signIn, signUp, signOut]);
+
   return (
-    <AuthContext.Provider value={{ user, session, isReady, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

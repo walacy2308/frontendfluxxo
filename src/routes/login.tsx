@@ -27,7 +27,6 @@ function LoginPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    console.log("Submit clicked, mode:", mode);
     setError(null);
     setSuccess(null);
 
@@ -68,11 +67,24 @@ function LoginPage() {
 
   // Redirect if already logged in - moved to useEffect for robustness
   useEffect(() => {
-    if (isReady && user) {
+    if (isReady && user && window.location.pathname !== "/") {
       console.log("User detected in LoginPage, redirecting to /...");
       navigate({ to: "/" });
     }
   }, [isReady, user, navigate]);
+
+  if (!isReady) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-xs uppercase tracking-widest text-muted-foreground animate-pulse">
+            Carregando...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -82,8 +94,8 @@ function LoginPage() {
           width: 480,
           height: 480,
           borderRadius: "50%",
-          background: "radial-gradient(circle, oklch(0.55 0.22 285 / 0.12) 0%, transparent 70%)",
-          filter: "blur(60px)",
+          background: "radial-gradient(circle, oklch(0.55 0.22 285 / 0.1) 0%, transparent 80%)",
+          filter: "blur(30px)",
         }}
       />
 

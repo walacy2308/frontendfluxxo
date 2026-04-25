@@ -66,8 +66,7 @@ function Dashboard() {
 
   // Redirect to login if not authenticated
   useEffect(() => {
-    console.log("Dashboard: isReady:", isReady, "user:", user?.id);
-    if (isReady && !user) {
+    if (isReady && !user && window.location.pathname !== "/login") {
       console.log("Dashboard: No user found, redirecting to /login");
       navigate({ to: "/login" });
     }
