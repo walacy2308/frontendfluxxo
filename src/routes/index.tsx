@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { LogOut, Plus, Receipt, Download } from "lucide-react";
 import { getGastos as fetchGastosAPI, deletarGasto, editarGasto, marcarComoPago, pagarParcelaAPI, criarGasto, type Transaction } from "@/lib/api";
@@ -17,6 +17,14 @@ import { Label } from "@/components/ui/label";
 import fluxxoIconGlow from "@/assets/fluxxo-icon-glow.png";
 
 export const Route = createFileRoute("/")({
+  beforeLoad: ({ context, location }) => {
+    if (context.auth.isReady && !context.auth.user) {
+      throw redirect({
+        to: "/login",
+        search: { redirect: location.href },
+      });
+    }
+  },
   component: Dashboard,
   head: () => ({
     meta: [
@@ -64,13 +72,12 @@ function Dashboard() {
     }
   };
 
-  // Redirect to login if not authenticated
+  // Fetch data only if user is logged in
   useEffect(() => {
-    if (isReady && !user && window.location.pathname !== "/login") {
-      console.log("Dashboard: No user found, redirecting to /login");
-      navigate({ to: "/login" });
+    if (user?.id) {
+      getGastos();
     }
-  }, [isReady, user, navigate]);
+  }, [user?.id, getGastos]);
 
   const getGastos = useCallback(async () => {
     if (!user?.id) {

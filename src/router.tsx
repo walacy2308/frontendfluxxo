@@ -66,7 +66,7 @@ export const getRouter = () => {
   const router = createRouter({
     routeTree,
     context: {
-      auth: undefined as any, // Será preenchido pelo componente que renderiza o RouterProvider
+      auth: undefined!, // Preenchido no Root componente
     },
     scrollRestoration: true,
     defaultPreloadStaleTime: 0,

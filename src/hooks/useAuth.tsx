@@ -22,79 +22,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const ensureUserRecord = useCallback(async (u: User) => {
     try {
-      // Check if user already exists in public.users
       const { data, error } = await supabase
         .from("users")
         .select("id")
         .eq("id", u.id)
         .maybeSingle();
 
-      if (error) {
-        console.error("AuthProvider: Error checking public.users:", error);
-        return;
-      }
+      if (error || data) return;
 
-      // If not, create the record
-      if (!data) {
-        console.log("AuthProvider: Creating public.users record for:", u.id);
-        const { error: insertError } = await supabase
-          .from("users")
-          .insert({ 
-            id: u.id, 
-            email: u.email,
-            telegram_code: null,
-            telegram_chat_id: null
-          });
-        
-        if (insertError) {
-          console.error("AuthProvider: Error creating public.users record:", insertError);
-        }
-      }
-    } catch (e) {
-      console.error("AuthProvider: Exception in ensureUserRecord:", e);
-    }
+      await supabase.from("users").insert({ id: u.id, email: u.email });
+    } catch (e) {}
   }, []);
 
   useEffect(() => {
     const initAuth = async () => {
-      console.log("Initializing Auth...");
-      const timeout = setTimeout(() => {
-        if (!isReady) {
-          console.warn("Auth initialization timed out.");
-          setIsReady(true);
-        }
-      }, 5000);
-
       try {
-        console.log("AuthProvider: Calling getSession()...");
         const { data: { session: s } } = await supabase.auth.getSession();
-        console.log("AuthProvider: getSession() completed. Session found:", !!s);
         setSession(s);
-        
         if (s?.user) {
           setUser(s.user);
-          // Gently ensure the public record exists
           ensureUserRecord(s.user);
         }
-        console.log("Auth initialized. User:", s?.user?.id);
       } catch (e) {
-        console.error("Error during auth init:", e);
+        console.error("Auth init error:", e);
       } finally {
-        console.log("AuthProvider: initAuth finally block");
-        clearTimeout(timeout);
         setIsReady(true);
       }
     };
 
     initAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
-      console.log("Auth State Change:", event, s?.user?.id);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
       setUser(s?.user ?? null);
-      if (s?.user) {
-        ensureUserRecord(s.user);
-      }
+      if (s?.user) ensureUserRecord(s.user);
     });
 
     return () => subscription.unsubscribe();
@@ -102,42 +63,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = useCallback(async (email: string, password: string) => {
     setLoading(true);
-    console.log("AuthProvider: Starting signIn for:", email);
-    
-    // Safety timeout to prevent infinite loading state
-    const authTimeout = setTimeout(() => {
-      console.warn("AuthProvider: signIn operation is taking too long...");
-    }, 10000);
-
     try {
-      console.log("AuthProvider: Calling supabase.auth.signInWithPassword...");
-      const response = await supabase.auth.signInWithPassword({ email, password });
-      console.log("LOGIN RESPONSE:", response);
-      const { error, data } = response;
-      
-      clearTimeout(authTimeout);
-      
+      const { error, data } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        console.error("AuthProvider: Sign in error details:", error);
         setLoading(false);
-        const msg = error.message === "Invalid login credentials"
-          ? "E-mail ou senha incorretos."
-          : error.message;
-        return { error: msg };
+        return { error: error.message === "Invalid login credentials" ? "E-mail ou senha incorretos." : error.message };
       }
-
-      if (data && data.user) {
-        console.log("AuthProvider: Sign in success! Setting local state for:", data.user.id);
+      if (data?.user) {
         setSession(data.session);
         setUser(data.user);
         await ensureUserRecord(data.user);
       }
-      
       setLoading(false);
       return { error: null };
     } catch (e: any) {
-      clearTimeout(authTimeout);
-      console.error("AuthProvider: Unexpected sign in exception:", e);
       setLoading(false);
       return { error: e.message || "Erro inesperado ao entrar." };
     }
@@ -145,30 +84,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = useCallback(async (email: string, password: string, name?: string) => {
     setLoading(true);
-    console.log("Signing up with:", email);
     try {
-      const { error, data } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: { 
           emailRedirectTo: window.location.origin,
-          data: {
-            first_name: name,
-          }
+          data: { first_name: name }
         },
       });
       setLoading(false);
-      if (error) {
-        console.error("Sign up error:", error);
-        const msg = error.message.includes("already registered")
-          ? "Este e-mail já está cadastrado."
-          : error.message;
-        return { error: msg };
-      }
-      console.log("Sign up success:", data.user?.id);
+      if (error) return { error: error.message };
       return { error: null };
     } catch (e: any) {
-      console.error("Unexpected sign up error:", e);
       setLoading(false);
       return { error: e.message || "Erro inesperado ao cadastrar." };
     }
@@ -176,6 +104,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
+    setUser(null);
+    setSession(null);
   }, []);
 
   const value = useMemo(() => ({

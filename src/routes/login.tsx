@@ -1,10 +1,15 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { useState, useEffect, type FormEvent } from "react";
 import { Eye, EyeOff, Mail, Lock, Loader2, User as UserIcon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import fluxxoIconGlow from "@/assets/fluxxo-icon-glow.png";
 
 export const Route = createFileRoute("/login")({
+  beforeLoad: ({ context }) => {
+    if (context.auth.isReady && context.auth.user) {
+      throw redirect({ to: "/" });
+    }
+  },
   component: LoginPage,
   head: () => ({
     meta: [
@@ -24,14 +29,6 @@ function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [success, setSuccess] = useState<string | null>(null);
-  
-  // Debug render count
-  useEffect(() => {
-    (window as any).loginRenderCount = ((window as any).loginRenderCount || 0) + 1;
-    if ((window as any).loginRenderCount > 50) {
-      console.error("DETECTION: Infinite re-render loop detected in LoginPage!");
-    }
-  });
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -54,13 +51,10 @@ function LoginPage() {
     }
 
     if (mode === "login") {
-      const response = await signIn(email, password);
-      console.log("LOGIN RESPONSE:", response);
-      const { error: err } = response;
+      const { error: err } = await signIn(email, password);
       if (err) {
         setError(err);
       } else {
-        console.log("Login successful, navigating to /");
         navigate({ to: "/" });
       }
     } else {
@@ -73,23 +67,10 @@ function LoginPage() {
     }
   };
 
-  // Redirect if already logged in - moved to useEffect for robustness
-  useEffect(() => {
-    if (isReady && user && window.location.pathname !== "/") {
-      console.log("User detected in LoginPage, redirecting to /...");
-      navigate({ to: "/" });
-    }
-  }, [isReady, user, navigate]);
-
   if (!isReady) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-xs uppercase tracking-widest text-muted-foreground animate-pulse">
-            Carregando...
-          </p>
-        </div>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
