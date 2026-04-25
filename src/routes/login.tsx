@@ -88,18 +88,7 @@ function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div
-        className="pointer-events-none fixed left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 z-0"
-        style={{
-          width: 480,
-          height: 480,
-          borderRadius: "50%",
-          background: "radial-gradient(circle, oklch(0.55 0.22 285 / 0.1) 0%, transparent 80%)",
-          filter: "blur(30px)",
-        }}
-      />
-
-      <div className="animate-fade-up relative z-10 w-full max-w-sm">
+      <div className="relative z-10 w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center gap-4">
           <img src={fluxxoIconGlow} alt="Fluxxo" className="h-12 w-auto" />
           <div className="text-center">
@@ -110,7 +99,7 @@ function LoginPage() {
           </div>
         </div>
 
-        <div className="card-premium rounded-2xl bg-card p-8">
+        <div className="rounded-2xl border border-border bg-card p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
               <div className="rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3 text-center text-sm text-red-400">
@@ -124,7 +113,7 @@ function LoginPage() {
             )}
 
             {mode === "signup" && (
-              <div className="space-y-2 animate-fade-up animate-fade-up-1">
+              <div className="space-y-2">
                 <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Nome Completo
                 </label>
