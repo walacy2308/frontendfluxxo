@@ -24,6 +24,14 @@ function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [success, setSuccess] = useState<string | null>(null);
+  
+  // Debug render count
+  useEffect(() => {
+    (window as any).loginRenderCount = ((window as any).loginRenderCount || 0) + 1;
+    if ((window as any).loginRenderCount > 50) {
+      console.error("DETECTION: Infinite re-render loop detected in LoginPage!");
+    }
+  });
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

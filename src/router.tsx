@@ -65,7 +65,9 @@ function DefaultErrorComponent({
 export const getRouter = () => {
   const router = createRouter({
     routeTree,
-    context: {},
+    context: {
+      auth: undefined as any, // Será preenchido pelo componente que renderiza o RouterProvider
+    },
     scrollRestoration: true,
     defaultPreloadStaleTime: 0,
     defaultErrorComponent: DefaultErrorComponent,
