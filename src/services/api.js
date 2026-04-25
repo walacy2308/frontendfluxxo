@@ -1,4 +1,4 @@
-export const API_URL = import.meta.env.VITE_API_URL || "https://fluxxo-production-d9d7.up.railway.app/api/v1";
+export const API_URL = import.meta.env.VITE_API_URL || "https://fluxxo-production-ffd4.up.railway.app/api/v1";
 
 function getUserId() {
   return localStorage.getItem("user_id");
